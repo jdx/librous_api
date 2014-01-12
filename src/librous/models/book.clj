@@ -7,3 +7,6 @@
 
 (defn all []
   (mc/find-maps "books"))
+
+(defn count_all []
+  (mc/count "books"))

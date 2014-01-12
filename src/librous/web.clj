@@ -1,54 +1,21 @@
 (ns librous.web
-  (:require [compojure.core :refer [defroutes GET PUT POST DELETE ANY]]
-            [compojure.handler :refer [site]]
+  (:use [compojure.core :only (defroutes GET)]
+        [ring.adapter.jetty :as ring]
+        [ring.util.response])
+  (:require [ring.middleware.json :as middleware]
             [compojure.route :as route]
+            [compojure.handler :as handler]
             [clojure.java.io :as io]
-            [ring.middleware.stacktrace :as trace]
-            [ring.middleware.session :as session]
-            [ring.middleware.session.cookie :as cookie]
-            [ring.adapter.jetty :as jetty]
-            [ring.middleware.basic-authentication :as basic]
-            [cemerick.drawbridge :as drawbridge]
-            [environ.core :refer [env]]))
+            [librous.db]))
 
-(defn- authenticated? [user pass]
-  ;; TODO: heroku config:add REPL_USER=[...] REPL_PASSWORD=[...]
-  (= [user pass] [(env :repl-user false) (env :repl-password false)]))
+(defroutes routes
+  (GET "/" [] (response {:foo "bar"})))
 
-(def ^:private drawbridge
-  (-> (drawbridge/ring-handler)
-      (session/wrap-session)
-      (basic/wrap-basic-authentication authenticated?)))
+(def app
+  (-> (handler/api routes)
+      (middleware/wrap-json-body)
+      (middleware/wrap-json-response)))
 
-(defroutes app
-  (ANY "/repl" {:as req}
-       (drawbridge req))
-  (GET "/" []
-       {:status 200
-        :headers {"Content-Type" "application/json"}
-        :body (pr-str ["Hello World!"])})
-  (ANY "*" []
-       (route/not-found (slurp (io/resource "404.html")))))
-
-(defn wrap-error-page [handler]
-  (fn [req]
-    (try (handler req)
-         (catch Exception e
-           {:status 500
-            :headers {"Content-Type" "text/html"}
-            :body (slurp (io/resource "500.html"))}))))
-
-(defn -main [& [port]]
-  (let [port (Integer. (or port (env :port) 5000))
-        ;; TODO: heroku config:add SESSION_SECRET=$RANDOM_16_CHARS
-        store (cookie/cookie-store {:key (env :session-secret)})]
-    (jetty/run-jetty (-> #'app
-                         ((if (env :production)
-                            wrap-error-page
-                            trace/wrap-stacktrace))
-                         (site {:session {:store store}}))
-                     {:port port :join? false})))
-
-;; For interactive development:
-;; (.stop server)
-;; (def server (-main))
+(defn -main []
+  (let [port(Integer/parseInt (or (System/getenv "PORT") "5000"))]
+    (run-jetty #'app {:port port :join? false})))

@@ -10,5 +10,5 @@
                  [com.novemberain/monger "1.7.0"]]
   :min-lein-version "2.0.0"
   :plugins [[lein-ring "0.8.10"]]
-  :ring {:handler librous.web/app}
+  :ring {:handler librous.web/app :init librous.web/init}
   :profiles {:production {:env {:production true}}})

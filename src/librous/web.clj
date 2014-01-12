@@ -1,9 +1,12 @@
 (ns librous.web
   (:use compojure.core
+        [librous.db :as db]
         [ring.adapter.jetty :as ring])
   (:require [ring.middleware.json :as middleware]
             [compojure.handler :as handler]
             [librous.router :as router]))
+
+(defn init [] (db/connect))
 
 (def app
   (-> (handler/api router/app-routes)

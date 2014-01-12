@@ -1,5 +1,4 @@
 (ns librous.models.book
-  (:use librous.db)
   (:require monger.json
             [monger.collection :as mc]))
 

@@ -14,5 +14,6 @@
       (middleware/wrap-json-response)))
 
 (defn -main []
+  (init)
   (let [port(Integer/parseInt (or (System/getenv "PORT") "5000"))]
     (run-jetty #'app {:port port :join? false})))

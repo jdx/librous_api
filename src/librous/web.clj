@@ -25,7 +25,7 @@
        (drawbridge req))
   (GET "/" []
        {:status 200
-        :headers {"Content-Type" "text/plain"}
+        :headers {"Content-Type" "application/json"}
         :body (pr-str ["Hello World!"])})
   (ANY "*" []
        (route/not-found (slurp (io/resource "404.html")))))

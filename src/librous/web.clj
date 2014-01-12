@@ -1,18 +1,12 @@
 (ns librous.web
-  (:use [compojure.core :only (defroutes GET)]
-        [ring.adapter.jetty :as ring]
-        [ring.util.response])
+  (:use compojure.core
+        [ring.adapter.jetty :as ring])
   (:require [ring.middleware.json :as middleware]
-            [compojure.route :as route]
             [compojure.handler :as handler]
-            [clojure.java.io :as io]
-            [librous.db]))
-
-(defroutes routes
-  (GET "/" [] (response {:foo "bar"})))
+            [librous.router :as router]))
 
 (def app
-  (-> (handler/api routes)
+  (-> (handler/api router/app-routes)
       (middleware/wrap-json-body)
       (middleware/wrap-json-response)))
 
